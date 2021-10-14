@@ -347,11 +347,19 @@ class DLRM_Net(nn.Module):
                         % (n_emb, ext_dist.my_size)
                     )
                 self.n_global_emb = n_emb
-                self.n_local_emb, self.n_emb_per_rank = ext_dist.get_split_lengths(
-                    n_emb
-                )
-                self.local_emb_slice = ext_dist.get_my_slice(n_emb)
-                self.local_emb_indices = list(range(n_emb))[self.local_emb_slice]
+#                self.n_local_emb, self.n_emb_per_rank = ext_dist.get_split_lengths(
+#                    n_emb
+#                )
+#                self.local_emb_slice = ext_dist.get_my_slice(n_emb)
+#                self.local_emb_indices = list(range(n_emb))[self.local_emb_slice]
+                embedding_ranks = [
+                        [0,1,2,3],[4,5,6,7],[8,9,10],[11,12,13], [14,15,16], [17,18,19],
+                        [20,22,23,24],[21,25]
+                ]
+                self.n_loccal_emb = len(embedding_ranks[ext_dist.my_local_rank])
+                self.n_emb_per_rank = [len(embedding_ranks[i]) for i in range(len(embedding_ranks))]
+                self.local_emb_indices = embedding_ranks[ext_dist.my_local_rank]
+
 
             # create operators
             if ndevices <= 1:
@@ -531,9 +539,10 @@ class DLRM_Net(nn.Module):
             )
 
         dense_x = dense_x[ext_dist.get_my_slice(batch_size)]
-        lS_o = lS_o[self.local_emb_slice]
-        lS_i = lS_i[self.local_emb_slice]
-
+        #lS_o = lS_o[self.local_emb_slice]
+        #lS_i = lS_i[self.local_emb_slice]
+        lS_o = [lS_o[i] for i in self.local_emb_indices]
+        lS_i = [lS_i[i] for i in self.local_emb_indices]
         if (len(self.emb_l) != len(lS_o)) or (len(self.emb_l) != len(lS_i)):
             sys.exit(
                 "ERROR: corrupted model input detected in distributed_forward call"
