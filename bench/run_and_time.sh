@@ -7,7 +7,7 @@
 #WARNING: must have compiled PyTorch and caffe2
 
 #check if extra argument is passed to the test
-if [[ $# == 1 ]]; then
+if [[ $# != 0 ]]; then
     dlrm_extra_option=$1
 else
     dlrm_extra_option=""
