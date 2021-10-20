@@ -1677,6 +1677,10 @@ def run():
                             use_gpu,
                             log_iter,
                         )
+                        if(is_best):
+                            print("I'm the best")
+                        
+                        print("try save model to: " + args.save_model)
 
                         if (
                             is_best
